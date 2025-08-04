@@ -1,0 +1,59 @@
+#http
+### Variables
+@orderService = http://localhost:8081
+@notificationService = http://localhost:8082
+@inventoryService = http://localhost:8083
+
+### Get all inventory
+GET {{inventoryService}}/api/inventory
+Accept: application/json
+
+### Get specific product inventory
+GET {{inventoryService}}/api/inventory/iPhone%2015
+Accept: application/json
+
+### Create a new order
+POST {{orderService}}/api/orders
+Content-Type: application/json
+
+{
+  "customerName": "Alice Johnson",
+  "productName": "MacBook Pro",
+  "quantity": 1,
+  "price": 2499.99
+}
+
+### Get all orders
+GET {{orderService}}/api/orders
+Accept: application/json
+
+### Get specific order
+GET {{orderService}}/api/orders/1
+Accept: application/json
+
+### Update order status to CONFIRMED
+PUT {{orderService}}/api/orders/1/status?status=CONFIRMED
+Accept: application/json
+
+### Update order status to CANCELLED
+PUT {{orderService}}/api/orders/1/status?status=CANCELLED
+Accept: application/json
+
+### Get all notifications
+GET {{notificationService}}/api/notifications
+Accept: application/json
+
+### Get notifications for specific order
+GET {{notificationService}}/api/notifications/order/1
+Accept: application/json
+
+### Create order with insufficient inventory
+POST {{orderService}}/api/orders
+Content-Type: application/json
+
+{
+  "customerName": "Bob Smith",
+  "productName": "iPhone 15",
+  "quantity": 10,
+  "price": 999.99
+}
