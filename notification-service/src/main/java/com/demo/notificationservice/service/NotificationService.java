@@ -54,29 +54,35 @@ public class NotificationService {
     }
 
     private String generateNotificationMessage(OrderEvent orderEvent) {
-        return switch (orderEvent.getEventType()) {
-            case "ORDER_CREATED" -> String.format(
-                    "Dear %s, your order #%d for %s (Quantity: %d) has been created successfully. Total: $%.2f",
-                    orderEvent.getCustomerName(), orderEvent.getOrderId(),
-                    orderEvent.getProductName(), orderEvent.getQuantity(), orderEvent.getPrice()
-            );
-            case "ORDER_STATUS_UPDATED" -> String.format(
-                    "Dear %s, your order #%d status has been updated to: %s",
-                    orderEvent.getCustomerName(), orderEvent.getOrderId(), orderEvent.getStatus()
-            );
-            default -> String.format(
-                    "Dear %s, there's an update on your order #%d",
-                    orderEvent.getCustomerName(), orderEvent.getOrderId()
-            );
-        };
+        switch (orderEvent.getEventType()) {
+            case "ORDER_CREATED":
+                return String.format(
+                        "Dear %s, your order #%d for %s (Quantity: %d) has been created successfully. Total: $%.2f",
+                        orderEvent.getCustomerName(), orderEvent.getOrderId(),
+                        orderEvent.getProductName(), orderEvent.getQuantity(), orderEvent.getPrice()
+                );
+            case "ORDER_STATUS_UPDATED":
+                return String.format(
+                        "Dear %s, your order #%d status has been updated to: %s",
+                        orderEvent.getCustomerName(), orderEvent.getOrderId(), orderEvent.getStatus()
+                );
+            default:
+                return String.format(
+                        "Dear %s, there's an update on your order #%d",
+                        orderEvent.getCustomerName(), orderEvent.getOrderId()
+                );
+        }
     }
 
     private String getEmailSubject(String eventType) {
-        return switch (eventType) {
-            case "ORDER_CREATED" -> "Order Confirmation";
-            case "ORDER_STATUS_UPDATED" -> "Order Status Update";
-            default -> "Order Update";
-        };
+        switch (eventType) {
+            case "ORDER_CREATED":
+                return "Order Confirmation";
+            case "ORDER_STATUS_UPDATED":
+                return "Order Status Update";
+            default:
+                return "Order Update";
+        }
     }
 
     public List<Notification> getAllNotifications() {

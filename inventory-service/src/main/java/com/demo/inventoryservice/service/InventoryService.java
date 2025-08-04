@@ -72,20 +72,20 @@ public class InventoryService {
         Inventory inventory = inventoryOpt.get();
 
         switch (orderEvent.getStatus()) {
-            case "CONFIRMED" -> {
+            case "CONFIRMED":
                 inventory.confirmReservation(orderEvent.getQuantity());
                 inventoryRepository.save(inventory);
                 sendInventoryEvent(orderEvent, "CONFIRMED", "Inventory confirmed");
                 log.info("Inventory confirmed: product={}, quantity={}",
                         orderEvent.getProductName(), orderEvent.getQuantity());
-            }
-            case "CANCELLED" -> {
+                break;
+            case "CANCELLED":
                 inventory.releaseReservation(orderEvent.getQuantity());
                 inventoryRepository.save(inventory);
                 sendInventoryEvent(orderEvent, "RELEASED", "Inventory released");
                 log.info("Inventory released: product={}, quantity={}",
                         orderEvent.getProductName(), orderEvent.getQuantity());
-            }
+                break;
         }
     }
 

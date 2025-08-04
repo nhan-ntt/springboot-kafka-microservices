@@ -6,7 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
-import java.util.concurrent.CompletableFuture;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.ListenableFutureCallback;
 
 @Service
 @RequiredArgsConstructor
@@ -20,14 +21,18 @@ public class InventoryProducer {
         log.info("Sending inventory event: orderId={}, status={}",
                 inventoryEvent.getOrderId(), inventoryEvent.getStatus());
 
-        CompletableFuture<SendResult<String, InventoryEvent>> future =
+        ListenableFuture<SendResult<String, InventoryEvent>> future =
                 kafkaTemplate.send(TOPIC, inventoryEvent.getOrderId().toString(), inventoryEvent);
 
-        future.whenComplete((result, exception) -> {
-            if (exception == null) {
+        future.addCallback(new ListenableFutureCallback<SendResult<String, InventoryEvent>>() {
+            @Override
+            public void onSuccess(SendResult<String, InventoryEvent> result) {
                 log.info("Inventory event sent successfully: orderId={}, offset={}",
                         inventoryEvent.getOrderId(), result.getRecordMetadata().offset());
-            } else {
+            }
+
+            @Override
+            public void onFailure(Throwable exception) {
                 log.error("Failed to send inventory event: orderId={}",
                         inventoryEvent.getOrderId(), exception);
             }

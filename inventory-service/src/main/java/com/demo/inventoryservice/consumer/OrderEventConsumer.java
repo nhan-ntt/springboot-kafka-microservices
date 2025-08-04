@@ -22,7 +22,7 @@ public class OrderEventConsumer {
     public void consumeOrderEvent(
             @Payload OrderEvent orderEvent,
             @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
-            @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
+            @Header(KafkaHeaders.RECEIVED_PARTITION_ID) int partition,
             @Header(KafkaHeaders.OFFSET) long offset,
             Acknowledgment acknowledgment) {
 
@@ -32,9 +32,15 @@ public class OrderEventConsumer {
 
         try {
             switch (orderEvent.getEventType()) {
-                case "ORDER_CREATED" -> inventoryService.reserveInventory(orderEvent);
-                case "ORDER_STATUS_UPDATED" -> inventoryService.handleOrderStatusUpdate(orderEvent);
-                default -> log.info("Unhandled event type: {}", orderEvent.getEventType());
+                case "ORDER_CREATED":
+                    inventoryService.reserveInventory(orderEvent);
+                    break;
+                case "ORDER_STATUS_UPDATED":
+                    inventoryService.handleOrderStatusUpdate(orderEvent);
+                    break;
+                default:
+                    log.info("Unhandled event type: {}", orderEvent.getEventType());
+                    break;
             }
 
             acknowledgment.acknowledge();

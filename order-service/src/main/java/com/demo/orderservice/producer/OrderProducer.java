@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -22,13 +24,17 @@ public class OrderProducer {
     public void sendOrderEvent(OrderEvent orderEvent) {
         log.info("Sending order event: {}", orderEvent.getOrderId());
 
-        CompletableFuture<SendResult<String, OrderEvent>> future = kafkaTemplate.send(TOPIC, orderEvent.getOrderId().toString(), orderEvent);
+        ListenableFuture<SendResult<String, OrderEvent>> future = kafkaTemplate.send(TOPIC, orderEvent.getOrderId().toString(), orderEvent);
 
-        future.whenComplete((result, exception) -> {
-            if (exception == null) {
+        future.addCallback(new ListenableFutureCallback<SendResult<String, OrderEvent>>() {
+            @Override
+            public void onSuccess(SendResult<String, OrderEvent> result) {
                 log.info("order event sent successfully: orderId = {}, offset = {}",
                         orderEvent.getOrderId(), result.getRecordMetadata().offset());
-            } else {
+            }
+
+            @Override
+            public void onFailure(Throwable exception) {
                 log.error("Failed to send order event: orderId = {}",
                         orderEvent.getOrderId(), exception);
             }

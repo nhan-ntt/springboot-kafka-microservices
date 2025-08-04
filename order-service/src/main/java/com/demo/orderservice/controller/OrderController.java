@@ -3,7 +3,7 @@ package com.demo.orderservice.controller;
 import com.demo.orderservice.entity.Order;
 import com.demo.orderservice.entity.OrderStatus;
 import com.demo.orderservice.service.OrderService;
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
