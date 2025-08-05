@@ -48,6 +48,7 @@ public class Inventory {
 
     public void releaseReservation(Integer quantityToRelease) {
         this.reservedQuantity = Math.max(0, this.reservedQuantity - quantityToRelease);
+        this.quantity = this.quantity + quantityToRelease;
     }
 
     public void confirmReservation(Integer quantityToConfirm) {

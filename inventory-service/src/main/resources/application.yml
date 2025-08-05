@@ -51,7 +51,7 @@ springdoc:
     tags-sorter: alpha
     disable-swagger-default-url: true
   show-actuator: false
-  packages-to-scan: com.demo.notificationservice.controller
+  packages-to-scan: com.demo.inventoryservice.controller
 
 
 logging:
