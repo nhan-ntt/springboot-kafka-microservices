@@ -22,7 +22,26 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
-        spring.json.add.type.headers: false
+        # SỬA LẠI THÀNH 'true' ĐỂ BẬT TÍNH NĂNG GỬI HEADER
+        spring.json.add.type.headers: true
+
+        # THÊM DÒNG NÀY ĐỂ GỬI ĐI VỚI "BIỆT DANH"
+        spring.json.type.mapping: orderEvent:com.demo.orderservice.dto.OrderEvent
+
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    try-it-out-enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+    disable-swagger-default-url: true
+  show-actuator: false
+  packages-to-scan: com.demo.orderservice.controller
 
 logging:
   level:

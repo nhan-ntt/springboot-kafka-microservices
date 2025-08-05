@@ -1,92 +1,93 @@
-#version: '3.8'
+version: '3.8'
 
-#services:
-#  # Zookeeper
-#  zookeeper:
-#    image: confluentinc/cp-zookeeper:7.4.0
-#    hostname: zookeeper
-#    container_name: zookeeper
-#    ports:
-#      - "2181:2181"
-#    environment:
-#      ZOOKEEPER_CLIENT_PORT: 2181
-#      ZOOKEEPER_TICK_TIME: 2000
-#    networks:
-#      - kafka-network
-#
-#  # Kafka
-#  kafka:
-#    image: confluentinc/cp-kafka:7.4.0
-#    hostname: kafka
-#    container_name: kafka
-#    depends_on:
-#      - zookeeper
-#    ports:
-#      - "9092:9092"
-#      - "9101:9101"
-#    environment:
-#      KAFKA_BROKER_ID: 1
-#      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-#      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-#      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-#      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-#      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-#      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-#      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-#      KAFKA_JMX_PORT: 9101
-#      KAFKA_JMX_HOSTNAME: localhost
-#      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-#    networks:
-#      - kafka-network
-#
-
-
-  # MailHog (for testing email notifications)
-
-#version: '3.8'
 services:
+  # Kafka with KRaft (no Zookeeper needed)
   kafka:
     image: confluentinc/cp-kafka:latest
+    hostname: kafka
+    container_name: kafka
     ports:
       - "9092:9092"
+      - "9101:9101"
     environment:
+      # KRaft mode configuration
       KAFKA_PROCESS_ROLES: 'broker,controller'
       KAFKA_NODE_ID: 1
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+      
+      # Listeners configuration
       KAFKA_LISTENERS: 'PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092'
-
-      # THAY ĐỔI Ở ĐÂY: Thêm PLAINTEXT vào advertised listeners
       KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092'
-
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
-
-      # Đảm bảo tên này khớp với một trong các KAFKA_LISTENERS
       KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
-
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      
+      # Cluster configuration
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
-
-      # Cấu hình log
+      
+      # Topic and replication settings
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      
+      # JMX monitoring
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
+      
+      # Log cleanup settings
+      KAFKA_LOG_CLEANUP_POLICY: delete
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    networks:
+      - kafka-network
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-
-
+  # MailHog for email testing
   mailhog:
     image: mailhog/mailhog:latest
+    hostname: mailhog
     container_name: mailhog
     ports:
-      - "1025:1025"  # SMTP server
-      - "8025:8025"  # Web UI
+      - "1025:1025"  # SMTP server port
+      - "8025:8025"  # Web UI port
+    networks:
+      - kafka-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8025"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Kafka UI for monitoring (optional but helpful)
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    hostname: kafka-ui
+    container_name: kafka-ui
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_METRICS_PORT: 9101
+    depends_on:
+      kafka:
+        condition: service_healthy
     networks:
       - kafka-network
 
 networks:
   kafka-network:
     driver: bridge
+    name: microservices-network
 
 volumes:
   kafka-data:
-  zookeeper-data:
+    driver: local

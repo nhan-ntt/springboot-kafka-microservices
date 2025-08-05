@@ -22,7 +22,7 @@ public class EmailService {
             email.setText(message);
 
             // Simulate email sending (in real app, uncomment the line below)
-            // mailSender.send(email);
+             mailSender.send(email);
 
             log.info("Email sent successfully to: {} with subject: {}", to, subject);
         } catch (Exception e) {

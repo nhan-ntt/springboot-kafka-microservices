@@ -28,8 +28,12 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: "*"
         spring.json.type.mapping: orderEvent:com.demo.notificationservice.dto.OrderEvent
+        spring.json.trusted.packages: "com.demo.notificationservice.dto"
+
+    listener:
+      ack-mode: MANUAL_IMMEDIATE
+
   mail:
     host: localhost
     port: 1025
@@ -38,6 +42,21 @@ spring:
     properties:
       mail.smtp.auth: false
       mail.smtp.starttls.enable: false
+
+# SpringDoc OpenAPI Configuration - Fixed
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    try-it-out-enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+    disable-swagger-default-url: true
+  show-actuator: false
+  packages-to-scan: com.demo.notificationservice.controller
 
 logging:
   level:
